@@ -19,27 +19,27 @@ namespace VisorEffectManager.Patches
             Material material = __instance.method_4();
 
             // Remove texturas baseado nas configurações
-            if (Plugin.RemoveGlassDamage.Value)
+            if (VisorEffectManager.RemoveGlassDamage.Value)
             {
                 material.SetTexture("_GlassDamageTex", null);
             }
 
-            if (Plugin.RemoveScratches.Value)
+            if (VisorEffectManager.RemoveScratches.Value)
             {
                 material.SetTexture("_ScratchesTex", null);
             }
 
-            if (Plugin.RemoveBlur.Value)
+            if (VisorEffectManager.RemoveBlur.Value)
             {
                 material.SetTexture("_BlurMask", null);
             }
 
-            if (Plugin.RemoveDistortion.Value)
+            if (VisorEffectManager.RemoveDistortion.Value)
             {
                 material.SetTexture("_DistortMask", null);
             }
 
-            if (Plugin.RemoveMask.Value)
+            if (VisorEffectManager.RemoveMask.Value)
             {
                 material.SetTexture("_Mask", null);
             }

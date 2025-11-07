@@ -38,7 +38,7 @@ This plugin allows you to individually control the visual effects of visors in E
 
 ```
 VisorEffectManager/
-├── Plugin.cs              # Main plugin class
+├── VisorEffectManager.cs  # Main plugin class
 ├── Patches/
 │   └── FaceShieldPatch.cs # Harmony patch to modify visors
 └── VisorEffectManager.csproj

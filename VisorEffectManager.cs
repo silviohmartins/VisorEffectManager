@@ -8,7 +8,7 @@ using VisorEffectManager.Patches;
 namespace VisorEffectManager
 {
     [BepInPlugin("com.jero.VisorEffectManager", "VisorEffectManager", "1.0.0")]
-    public class Plugin : BaseUnityPlugin
+    public class VisorEffectManager : BaseUnityPlugin
     {
         public static ManualLogSource LogSource;
 
