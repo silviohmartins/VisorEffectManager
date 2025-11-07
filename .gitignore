@@ -181,3 +181,6 @@ Desktop.ini
 
 ## Recycle Bin used on file shares
 $RECYCLE.BIN/
+
+##Othres
+DESCRIPTION.md
