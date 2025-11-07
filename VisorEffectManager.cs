@@ -3,11 +3,12 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using UnityEngine;
 using VisorEffectManager.Patches;
 
 namespace VisorEffectManager
 {
-    [BepInPlugin("com.jero.VisorEffectManager", "VisorEffectManager", "1.0.0")]
+    [BepInPlugin("com.jero.VisorEffectManager", "VisorEffectManager", "1.0.1")]
     public class VisorEffectManager : BaseUnityPlugin
     {
         public static ManualLogSource LogSource;
@@ -24,8 +25,12 @@ namespace VisorEffectManager
         private void Awake()
         {
             LogSource = Logger;
+            LogSource.LogInfo("VisorEffectManager: Initializing...");
+
             InitConfiguration();
             new FaceShieldPatch().Enable();
+
+            LogSource.LogInfo("VisorEffectManager: Initialization complete");
         }
 
         private void InitConfiguration()
@@ -66,10 +71,13 @@ namespace VisorEffectManager
             RemoveBlur.SettingChanged += OnSettingChanged;
             RemoveDistortion.SettingChanged += OnSettingChanged;
             RemoveMask.SettingChanged += OnSettingChanged;
+
+            LogSource.LogInfo("VisorEffectManager: Configuration initialized with default values (all enabled)");
         }
 
         private void OnSettingChanged(object sender, EventArgs e)
         {
+            LogSource.LogInfo("VisorEffectManager: Configuration changed, updating all visor effects");
             // Atualiza todos os visores ativos quando qualquer configuração mudar
             UpdateAllVisorEffects();
         }
@@ -86,29 +94,41 @@ namespace VisorEffectManager
                     return;
                 }
 
-                // Obtém o método method_2 via reflection
+                // Obtém o método method_2 via reflection (cache uma vez)
                 MethodInfo method2 = typeof(VisorEffect).GetMethod("method_2", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
                 if (method2 == null)
                 {
-                    LogSource.LogWarning("Could not find method_2 in VisorEffect class.");
+                    LogSource.LogWarning("UpdateAllVisorEffects: Could not find method_2 in VisorEffect class.");
                     return;
                 }
 
+                int updatedCount = 0;
                 // Chama method_2() em cada instância para forçar atualização
                 foreach (VisorEffect visorEffect in visorEffects)
                 {
                     if (visorEffect != null && visorEffect.enabled)
                     {
-                        method2.Invoke(visorEffect, null);
+                        try
+                        {
+                            method2.Invoke(visorEffect, null);
+                            updatedCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            LogSource.LogWarning($"UpdateAllVisorEffects: Error updating visor effect instance - {ex.Message}");
+                        }
                     }
                 }
 
-                LogSource.LogInfo($"Updated {visorEffects.Length} visor effect(s) after configuration change.");
+                if (updatedCount > 0)
+                {
+                    LogSource.LogInfo($"UpdateAllVisorEffects: Updated {updatedCount} visor effect(s)");
+                }
             }
             catch (Exception ex)
             {
-                LogSource.LogError($"Error updating visor effects: {ex.Message}");
+                LogSource.LogError($"UpdateAllVisorEffects: Error updating visor effects - {ex.Message}\n{ex.StackTrace}");
             }
         }
     }
