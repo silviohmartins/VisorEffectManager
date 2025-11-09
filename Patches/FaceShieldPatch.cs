@@ -39,8 +39,7 @@ namespace VisorEffectManager.Patches
                 if (VisorEffectManager.RemoveGlassDamage == null ||
                     VisorEffectManager.RemoveScratches == null ||
                     VisorEffectManager.RemoveBlur == null ||
-                    VisorEffectManager.RemoveDistortion == null ||
-                    VisorEffectManager.RemoveMask == null)
+                    VisorEffectManager.RemoveDistortion == null)
                 {
                     VisorEffectManager.LogSource?.LogWarning("FaceShieldPatch: Configuration entries not initialized yet");
                     return;
@@ -67,11 +66,6 @@ namespace VisorEffectManager.Patches
                     material.SetTexture("_DistortMask", null);
                 }
 
-                if (VisorEffectManager.RemoveMask.Value)
-                {
-                    material.SetTexture("_Mask", null);
-                }
-
                 VisorEffectManager.LogSource?.LogDebug($"FaceShieldPatch: Applied settings to visor effect (Material: {material.name})");
             }
             catch (System.Exception ex)
@@ -79,6 +73,5 @@ namespace VisorEffectManager.Patches
                 VisorEffectManager.LogSource?.LogError($"FaceShieldPatch: Error applying visor settings - {ex.Message}\n{ex.StackTrace}");
             }
         }
-
     }
 }
