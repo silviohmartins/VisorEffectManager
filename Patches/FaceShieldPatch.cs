@@ -1,76 +1,101 @@
-﻿using System.Reflection;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using SPT.Reflection.Patching;
 using UnityEngine;
-using VisorEffectManager;
 
 namespace VisorEffectManager.Patches
 {
-    internal class FaceShieldPatch : ModulePatch
+    /// <summary>
+    /// Records the mask set on each VisorEffect. With the Narrow mask the game clears every
+    /// texture on purpose, so it must not be restored when a removal setting is disabled.
+    /// </summary>
+    internal class FaceShieldMaskPatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(VisorEffect).GetMethod("method_2", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
+            return typeof(VisorEffect).GetMethod(nameof(VisorEffect.SetMask), BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
         }
 
         [PatchPostfix]
-        static void Postfix(VisorEffect __instance)
+        static void Postfix(VisorEffect __instance, VisorEffect.EMask mask)
+        {
+            VisorTextures.SetMask(__instance, mask);
+        }
+    }
+
+    /// <summary>
+    /// Applies the settings right before the visor is rendered. SetMask only runs when the helmet
+    /// slot changes, so applying here also covers swapping the visor and toggling via hotkeys.
+    /// </summary>
+    internal class FaceShieldPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(VisorEffect).GetMethod(nameof(VisorEffect.OnRenderImageImpl), BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
+        }
+
+        [PatchPrefix]
+        static void Prefix(VisorEffect __instance)
+        {
+            // Same threshold the game uses to skip the effect entirely
+            if (__instance.Intensity < 0.01f)
+            {
+                return;
+            }
+
+            VisorTextures.Apply(__instance);
+        }
+    }
+
+    internal static class VisorTextures
+    {
+        private static readonly object Marker = new object();
+        private static readonly ConditionalWeakTable<VisorEffect, object> NarrowMask = new ConditionalWeakTable<VisorEffect, object>();
+        private static bool _errorLogged;
+
+        internal static void SetMask(VisorEffect visor, VisorEffect.EMask mask)
+        {
+            NarrowMask.Remove(visor);
+            if (mask == VisorEffect.EMask.Narrow)
+            {
+                NarrowMask.Add(visor, Marker);
+            }
+        }
+
+        internal static void Apply(VisorEffect visor)
         {
             try
             {
-                // Verifica se a instância é válida
-                if (__instance == null)
-                {
-                    VisorEffectManager.LogSource?.LogWarning("FaceShieldPatch: VisorEffect instance is null");
-                    return;
-                }
-
-                // Obtém o material
-                Material material = __instance.method_4();
-
-                // Verifica se o material é válido antes de aplicar configurações
-                if (material == null)
-                {
-                    VisorEffectManager.LogSource?.LogWarning("FaceShieldPatch: Material is null, skipping configuration application");
-                    return;
-                }
-
-                // Aplica configurações apenas se as entradas de configuração estiverem inicializadas
                 if (VisorEffectManager.RemoveGlassDamage == null ||
                     VisorEffectManager.RemoveScratches == null ||
                     VisorEffectManager.RemoveBlur == null ||
                     VisorEffectManager.RemoveDistortion == null)
                 {
-                    VisorEffectManager.LogSource?.LogWarning("FaceShieldPatch: Configuration entries not initialized yet");
                     return;
                 }
 
-                // Remove texturas baseado nas configurações
-                if (VisorEffectManager.RemoveGlassDamage.Value)
+                Material material = visor.GetMaterial();
+                if (material == null)
                 {
-                    material.SetTexture("_GlassDamageTex", null);
+                    return;
                 }
 
-                if (VisorEffectManager.RemoveScratches.Value)
-                {
-                    material.SetTexture("_ScratchesTex", null);
-                }
+                bool narrow = NarrowMask.TryGetValue(visor, out _);
 
-                if (VisorEffectManager.RemoveBlur.Value)
-                {
-                    material.SetTexture("_BlurMask", null);
-                }
-
-                if (VisorEffectManager.RemoveDistortion.Value)
-                {
-                    material.SetTexture("_DistortMask", null);
-                }
-
-                VisorEffectManager.LogSource?.LogDebug($"FaceShieldPatch: Applied settings to visor effect (Material: {material.name})");
+                // Removed effects get null; otherwise restore the game's default texture (see VisorEffect.SetDefault)
+                material.SetTexture("_GlassDamageTex", VisorEffectManager.RemoveGlassDamage.Value || narrow ? null : visor.GetOrCreateGlassRenderTexture());
+                material.SetTexture("_ScratchesTex", VisorEffectManager.RemoveScratches.Value || narrow ? null : visor.Scratches);
+                material.SetTexture("_BlurMask", VisorEffectManager.RemoveBlur.Value || narrow ? null : visor.BlurMask);
+                material.SetTexture("_DistortMask", VisorEffectManager.RemoveDistortion.Value || narrow ? null : visor.DistortMask);
             }
             catch (System.Exception ex)
             {
-                VisorEffectManager.LogSource?.LogError($"FaceShieldPatch: Error applying visor settings - {ex.Message}\n{ex.StackTrace}");
+                // Runs every frame, so only log the first failure
+                if (!_errorLogged)
+                {
+                    _errorLogged = true;
+                    VisorEffectManager.LogSource?.LogError($"FaceShieldPatch: Error applying visor settings - {ex.Message}\n{ex.StackTrace}");
+                }
             }
         }
     }

@@ -8,7 +8,7 @@ using VisorEffectManager.Patches;
 
 namespace VisorEffectManager
 {
-    [BepInPlugin("com.jero.visoreffectmanager", "VisorEffectManager", "1.0.2")]
+    [BepInPlugin("com.jero.visoreffectmanager", "VisorEffectManager", "1.1.0")]
     public class VisorEffectManager : BaseUnityPlugin
     {
         internal static ManualLogSource LogSource;
@@ -34,6 +34,7 @@ namespace VisorEffectManager
             LogSource.LogInfo("VisorEffectManager: Initializing...");
 
             InitConfiguration();
+            new FaceShieldMaskPatch().Enable();
             new FaceShieldPatch().Enable();
 
             LogSource.LogInfo("VisorEffectManager: Initialization complete");
@@ -67,7 +68,6 @@ namespace VisorEffectManager
             LogSource.LogInfo($"  Scratches: {HotkeyScratches.Value}");
             LogSource.LogInfo($"  Blur: {HotkeyBlur.Value}");
             LogSource.LogInfo($"  Distortion: {HotkeyDistortion.Value}");
-            LogSource.LogInfo("Note: Changes will be applied when visor is equipped or when entering a new raid.");
         }
 
         private void ToggleSetting(ConfigEntry<bool> setting, string settingName)
@@ -83,7 +83,6 @@ namespace VisorEffectManager
                 setting.Value = newValue;
 
                 LogSource.LogInfo($"VisorEffectManager: {settingName} {(newValue ? "enabled" : "disabled")} via keyboard shortcut");
-                LogSource.LogInfo($"VisorEffectManager: Change will be applied when visor is updated (equip/unequip or new raid)");
             }
             catch (Exception ex)
             {
@@ -123,25 +122,25 @@ namespace VisorEffectManager
                 KeyboardSectionName,
                 "1. Hotkey - Glass Damage",
                 new KeyboardShortcut(KeyCode.Alpha1, KeyCode.RightControl),
-                "Keyboard shortcut to toggle Glass Damage removal. Changes apply when visor is updated.");
+                "Keyboard shortcut to toggle Glass Damage removal.");
 
             HotkeyScratches = Config.Bind(
                 KeyboardSectionName,
                 "2. Hotkey - Scratches",
                 new KeyboardShortcut(KeyCode.Alpha2, KeyCode.RightControl),
-                "Keyboard shortcut to toggle Scratches removal. Changes apply when visor is updated.");
+                "Keyboard shortcut to toggle Scratches removal.");
 
             HotkeyBlur = Config.Bind(
                 KeyboardSectionName,
                 "3. Hotkey - Blur",
                 new KeyboardShortcut(KeyCode.Alpha3, KeyCode.RightControl),
-                "Keyboard shortcut to toggle Blur removal. Changes apply when visor is updated.");
+                "Keyboard shortcut to toggle Blur removal.");
 
             HotkeyDistortion = Config.Bind(
                 KeyboardSectionName,
                 "4. Hotkey - Distortion",
                 new KeyboardShortcut(KeyCode.Alpha4, KeyCode.RightControl),
-                "Keyboard shortcut to toggle Distortion removal. Changes apply when visor is updated.");
+                "Keyboard shortcut to toggle Distortion removal.");
 
             LogSource.LogInfo("VisorEffectManager: Configuration initialized with default values (all enabled)");
         }

@@ -1,58 +1,68 @@
 # VisorEffectManager
 
-BepInEx plugin for SPT (Single Player Tarkov) that allows managing and customizing the visual effects of face protection visors.
+BepInEx client plugin for SPT (Single Player Tarkov) that lets you manage the visual effects of face shield visors.
 
 ## Description
 
-This plugin allows you to individually control the visual effects of visors in Escape from Tarkov, including damage, scratches, blur, distortion, and mask. All settings can be adjusted in real-time during gameplay.
+This plugin lets you individually remove the visual effects of visors in Escape from Tarkov: glass damage, scratches, blur and distortion. Each effect can be toggled in the BepInEx configuration or with a keyboard shortcut.
 
 ## Requirements
 
-- SPT-AKI (Single Player Tarkov)
-- BepInEx installed and configured
-- .NET Standard 2.1
+- SPT 4.1.x
+- BepInEx (included with SPT)
 
 ## Installation
 
-1. Compile the project or download the compiled version
-2. Copy the `VisorEffectManager.dll` file to `BepInEx/plugins/`
-3. Start the SPT server
+1. Build the project or download the compiled version
+2. Copy `VisorEffectManager.dll` to `BepInEx/plugins/` in your SPT folder
+3. Start SPT
 
 ## Features
 
-- **Individual Control**: Enable or disable each effect separately
-- **Real-Time Updates**: Changes are applied immediately without needing to discover/cover the visor
-- **Persistent Settings**: All settings are saved and loaded automatically
+- **Individual control**: enable or disable the removal of each effect separately
+- **Keyboard shortcuts**: toggle each effect in-game
+- **Persistent settings**: all settings are saved and loaded automatically
+
+Changes are applied immediately, including when the visor is swapped or toggled.
 
 ### Controllable Effects
 
-- Visor damage (`_GlassDamageTex`)
-- Scratches (`_ScratchesTex`)
-- Blur (`_BlurMask`)
-- Distortion (`_DistortMask`)
-- Mask (`_Mask`)
+| Effect       | Shader property   | Default hotkey      |
+|--------------|-------------------|---------------------|
+| Glass damage | `_GlassDamageTex` | `Right Ctrl + 1`    |
+| Scratches    | `_ScratchesTex`   | `Right Ctrl + 2`    |
+| Blur         | `_BlurMask`       | `Right Ctrl + 3`    |
+| Distortion   | `_DistortMask`    | `Right Ctrl + 4`    |
+
+All effects are removed by default. Settings and hotkeys can be changed with the BepInEx Configuration Manager (F12) or in `BepInEx/config/com.jero.visoreffectmanager.cfg`.
 
 ## Development
 
 ### Project Structure
 
-```
+```text
 VisorEffectManager/
-├── VisorEffectManager.cs  # Main plugin class
+├── VisorEffectManager.cs  # Main plugin class (configuration and hotkeys)
 ├── Patches/
-│   └── FaceShieldPatch.cs # Harmony patch to modify visors
+│   └── FaceShieldPatch.cs # Applies the settings before VisorEffect renders (OnRenderImageImpl)
 └── VisorEffectManager.csproj
 ```
 
 ### Build
 
-Make sure the `TarkovDir` variable in the `.csproj` file points to the correct directory of your SPT installation.
+The project references assemblies from an SPT installation. By default, `TarkovDir` points to `C:\games\SPT-4.1\`. Change it in the `.csproj` or override it on the command line:
+
+```powershell
+dotnet build -c Release -p:TarkovDir=D:\path\to\SPT\
+```
+
+The output is `bin/Release/VisorEffectManager.dll`.
 
 ### Technologies
 
-- **BepInEx**: Modding framework
-- **Harmony**: Code patching library
-- **SPT Reflection**: SPT reflection utilities
+- **BepInEx**: modding framework
+- **Harmony**: code patching library
+- **SPT Reflection**: SPT patching utilities (`ModulePatch`)
 
 ## License
 

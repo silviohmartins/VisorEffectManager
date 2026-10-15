@@ -8,12 +8,12 @@
 		<OutputType>Library</OutputType>
 		<RootNamespace>VisorEffectManager</RootNamespace>
 		<AssemblyName>VisorEffectManager</AssemblyName>
-		<Version>1.0.0</Version>
+		<Version>1.1.0</Version>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<TarkovDir Condition=" '$(TarkovDir)' == '' ">D:\GAMES\SPT-4.0.2_MODDING\</TarkovDir>
+		<TarkovDir Condition=" '$(TarkovDir)' == '' ">C:\games\SPT-4.1\</TarkovDir>
 		<TarkovPluginsSPTDir>$(TarkovDir)BepInEx\plugins\spt\</TarkovPluginsSPTDir>
 		<TarkovManagedDir>$(TarkovDir)EscapeFromTarkov_Data\Managed\</TarkovManagedDir>
 		<TarkovBepInExCoreDir>$(TarkovDir)BepInEx\core\</TarkovBepInExCoreDir>
@@ -38,6 +38,7 @@
 		</Reference>
 		<Reference Include="spt-common">
 			<HintPath>$(TarkovPluginsSPTDir)spt-common.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 
 		<!-- Tarkov Game -->
@@ -56,6 +57,7 @@
 		<Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
 			<SpecificVersion>False</SpecificVersion>
 			<HintPath>$(TarkovManagedDir)Newtonsoft.Json.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 
 		<!-- Unity -->
@@ -85,6 +87,7 @@
 		</Reference>
 		<Reference Include="PhysicsModule">
 			<HintPath>$(TarkovManagedDir)UnityEngine.PhysicsModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 	</ItemGroup>
 </Project>
